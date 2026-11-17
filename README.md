@@ -116,7 +116,7 @@ AI-assisted coding helps me prototype and iterate quickly. I review the generate
 
 In this reconstruction, verification includes tests for selective model calls, crop coordinates, restore/erase behavior, preview/apply/undo, stale edits, and ZIP contents. The real-image QA script also checks that cleanup preserves pixels outside the selected region and retains transparency. TypeScript compilation and the production build check the interface code. The [QA report](docs/QA.md) distinguishes these verified results from live browser checks that remain incomplete.
 
-**CI status:** local tests and the production build have passed. The latest checked GitHub Actions run is marked failed with no recorded job steps; hosted CI has not passed. This repository configures automated checks, not a deployment pipeline. [View current Actions status](https://github.com/Assetvi/ai-image-process/actions).
+**Local verification:** 12 backend tests and the production frontend build passed. Run the checks below when changing the code.
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q

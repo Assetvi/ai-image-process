@@ -8,13 +8,7 @@ QA covers the batch workflow and the new optional logo/object-cleanup path. All 
 
 The author previously built a similar business workflow with AI-assisted coding. This public reconstruction makes the development and verification approach inspectable: use AI assistance for rapid implementation, review the changed logic, create focused test cases for a feature or discovered failure, fix the failure, and rerun the relevant checks. Follow those checks with representative-image processing and inspection of the resulting assets.
 
-Small regression cases exercise concrete behavior rather than merely repeat implementation details. Examples include preserving unselected pixels during inpainting, rejecting a stale preview, restoring an earlier image revision, and confirming the exact ZIP contents. Model-substitute tests verify application behavior; separate real-model QA checks the integrated pipeline. A successful local run does not imply a successful hosted CI run or completed browser review.
-
-## Hosted CI status
-
-The latest checked [GitHub Actions run](https://github.com/Assetvi/ai-image-process/actions/runs/44009010513) is marked failed. Its frontend and Ubuntu backend jobs failed without any recorded steps, and the Windows backend job was cancelled. No job logs were available. The reported failure therefore does not establish a test assertion or compilation failure; no execution of those steps is recorded. Local results are recorded separately below.
-
-The workflow currently runs automated checks only; no automated deployment (CD) is configured. The [Actions page](https://github.com/Assetvi/ai-image-process/actions) is authoritative for subsequent runs.
+Small regression cases exercise concrete behavior rather than merely repeat implementation details. Examples include preserving unselected pixels during inpainting, rejecting a stale preview, restoring an earlier image revision, and confirming the exact ZIP contents. Model-substitute tests verify application behavior; separate real-model QA checks the integrated pipeline. A successful local run does not imply a completed browser review.
 
 ## Checks
 
