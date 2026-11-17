@@ -113,3 +113,7 @@ npm run build
 The workflow tests cover selective model calls, restoring lost white pixels, manual crop, erase, undo, review state, export contents, stale-edit rejection, invalid uploads, and restart recovery. They use a deterministic model substitute; they do not measure pretrained-model accuracy or prove a specific batch throughput. Real model quality requires inspecting representative product images.
 
 Verification includes backend tests, a TypeScript/Vite production build, and real-model image processing. Run `python scripts/qa_demo.py` after local model setup to reproduce the six-image batch, detection requests, inpainting preview, pixel-preservation assertions, apply/undo checks, and ZIP export. See the [QA report](QA.md) for results and verification limits.
+
+### Optional Lean verification
+
+The [Lean crop experiment](../formal/README.md) checks mathematical properties of the crop-padding calculation and compares the specification with actual Pillow outputs. It is a separate local development check; installing Lean is optional and adds no application runtime dependency. The guide includes the pinned toolchain, command, negative control, results, and limitations.

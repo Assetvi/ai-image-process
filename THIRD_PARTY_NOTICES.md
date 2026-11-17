@@ -36,6 +36,8 @@ The root MIT license covers this project's code and original illustrations. It d
 
 Dependencies retain the license distributed in each package. See the authoritative projects for current terms:
 
+- Lean 4.19.0 (Apache-2.0): https://github.com/leanprover/lean4. Optional proof-checking compiler; downloaded separately and not redistributed here. Project-authored Lean proof source remains covered by the repository's MIT license.
+
 - Python: https://www.python.org/psf/license/
 - FastAPI (MIT): https://github.com/fastapi/fastapi
 - Uvicorn (BSD): https://github.com/Kludex/uvicorn

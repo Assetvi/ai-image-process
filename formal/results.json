@@ -1,0 +1,11 @@
+{
+  "lean": "Lean (version 4.19.0, x86_64-w64-windows-gnu, commit 6caaee842e94, Release)",
+  "theorems_checked": 5,
+  "admitted_proofs": 0,
+  "lean_fixtures": 7644,
+  "pillow_comparisons": 30576,
+  "negative_control_rejected": true,
+  "conformance_failures": 0,
+  "seconds": 2.047,
+  "scope": "Padding of valid detected foreground bounds; not segmentation accuracy or Python proof"
+}

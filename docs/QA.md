@@ -33,6 +33,12 @@ python scripts/qa_demo.py
 
 The script writes a new ignored local QA workspace and refreshes the documented demo outputs. Its removal rectangle is explicitly selected from inspecting the photo. It does not pretend the detector selected that area automatically.
 
+## Optional Lean crop experiment
+
+Five Lean theorems check crop-padding bounds, nonempty output, retention of already-detected foreground, zero-padding identity, and padding monotonicity. A separate runner compared 7,644 Lean intervals with the actual Pillow pipeline in two orientations and two foreground branches: **30,576 comparisons passed**. An intentionally wrong padding calculation was rejected by Lean. No production defect was discovered by this trial.
+
+This proves properties of a manually translated arithmetic specification. It does not prove the Python implementation end to end or verify segmentation/detection accuracy. See the [experiment, tradeoffs, and reproduction steps](../formal/README.md) and [recorded results](../formal/results.json).
+
 ## Bugs and limitations found
 
 | Finding | Resolution or limit |

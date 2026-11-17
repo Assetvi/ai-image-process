@@ -22,3 +22,6 @@ Thumbs.db
 work/
 pytest-cache-files-*/
 *.tsbuildinfo
+.lake/
+*.olean
+*.ilean
