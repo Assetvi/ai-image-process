@@ -1,13 +1,89 @@
 # Frame — AI Image Process
 
-A local product-image workspace built around selective AI background removal, batch whitespace cropping, human review and correction, and ZIP export.
+A local product-image workspace for a practical human-in-the-loop workflow: inspect a batch, flag only images needing AI background removal, crop all images, correct mistakes, and export one ZIP for an existing catalog upload system.
 
-**Upload status:** Architecture documentation is available below. The application source was implemented locally and passed 10 backend tests plus the frontend production build, but the computer disconnected before the full source upload. This repository is not runnable yet.
+This is an independent implementation of that workflow. No company source code, internal systems, customer data, or company product photos are included.
 
-[Architecture and design decisions](docs/DECISIONS.md) explains the programming languages, frameworks, model, storage, editor controls, processing behavior, export format, and tradeoffs.
+## What works
 
-The local implementation includes batch upload, per-image AI flags, auto-crop, manual crop, restore/erase brushes, undo, original/processed comparison, approvals, persistent batches, and PNG ZIP export.
+- Upload JPEG, PNG, or WebP: up to 200 images, 20 MB each, 500 MB total, and 24 megapixels per image.
+- Decide per image whether to remove its background. Unflagged images go through cropping only.
+- Run local U²-Net inference through rembg and ONNX Runtime. No image-processing API keys or external inference services.
+- Automatically trim outer whitespace or transparent borders, with adjustable padding and white threshold.
+- Compare original and processed views; draw a manual crop rectangle; restore original pixels or erase with a brush.
+- Undo unsaved brush strokes and up to 10 saved edits per image. Reset to the original at any time after processing.
+- Approve results, reopen recent batches, and export all images or only approved images.
+- Export PNGs on white or transparent backgrounds plus a manifest. Failed images block export until fixed; they are never silently omitted.
 
-Demo material was prepared using original generic device illustrations and a separately attributed iPhone 15 Pro Max photo. No employer code, internal systems, private product photos, credentials, uploads, or model weights are published here.
+## Run locally
 
-The full tested source and credited assets still need to be uploaded from the local checkout. Live browser review and real-model inference remain unverified.
+Requirements: Python 3.11–3.13 and Node.js 22.12 or newer. Run commands from the repository root. Python 3.11 is the verified development version.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[ai,dev]"
+cd frontend
+npm install
+npm run build
+cd ..
+.\.venv\Scripts\python.exe -m app.download_model
+.\.venv\Scripts\python.exe -m app
+```
+
+Open **http://127.0.0.1:8765**. Keep this terminal running. Model setup is an explicit one-time download of approximately 176 MB; subsequent inference runs locally. Package installation and model setup require Internet access.
+
+On macOS/Linux, replace `.\.venv\Scripts\python.exe` with `.venv/bin/python`. To use crop and manual-edit features without AI, install `".[dev]"` and omit the model download. AI-flagged processing will explain that setup is missing.
+
+For frontend development, run `npm run dev` in `frontend` alongside the Python server. Vite proxies `/api` to port 8765. Rebuild the frontend before returning to the single-server setup. `IMAGE_PROCESS_PORT` can change the Python port; update the Vite proxy when using a custom port for development.
+
+### Optional NVIDIA GPU
+
+Use `pip install -e ".[gpu]"` in a separate environment instead of the CPU AI extra. Configure the CUDA/cuDNN versions required by your ONNX Runtime installation. The app prefers an available CUDA provider and otherwise uses CPU. Installing the GPU extra alone does not guarantee GPU execution; `/api/health` reports the providers after model initialization.
+
+## Demo walkthrough
+
+Click **Try an example batch**. It includes original speaker, white bottle, headphones, and camera illustrations plus a credited iPhone 15 Pro Max photo. Leave the clean images unflagged; flag the camera and phone, then process the batch. Inspect the output and use Crop, Restore, and Erase as needed before approving and exporting.
+
+See [the demo guide](docs/DEMO.md) for a real-device example and human review steps. See [asset credits](THIRD_PARTY_NOTICES.md) for the source and license of any third-party demo photo.
+
+## Why these components?
+
+| Element | Decision and reason |
+| --- | --- |
+| Image-processing language | Python: mature Pillow, rembg, and ONNX Runtime support; keeps image algorithms and inference in one process. |
+| API | FastAPI: explicit validated request schemas, multipart uploads, and generated API docs at `/docs`. |
+| Interface | React and TypeScript: predictable batch/editor state and typed API payloads; useful for an editing workspace with several simultaneous controls. |
+| Build tool | Vite: fast local development; ships a static build that Python can serve. |
+| AI | Local pretrained U²-Net through rembg: practical segmentation without training data, paid APIs, or sending product photos elsewhere. |
+| Human review | Selective flags, preserved originals, and manual correction: segmentation can remove white product details or leave unwanted background. |
+| Image operations | Pillow on the server: edits and export use source-resolution pixels; the browser canvas is a preview. |
+| Persistence | SQLite metadata and local PNG files: no separate database service and batches survive restarts. |
+| Worker | One background processing worker: avoids loading several model sessions and oversubscribing GPU/RAM. |
+| Export | PNGs in ZIP with JSON manifest: preserves details/transparency and fits a manual admin upload workflow. |
+| UI design | Muted neutral surfaces, green actions, three workflow stages, and image/editor/settings columns: puts reviewing and correction at the center. |
+
+[Architecture and tradeoffs](docs/DECISIONS.md) explains each choice, alternatives, data flow, limits, and failure behavior in more depth.
+
+## Data and operation
+
+`data/` contains decoded originals, working images, undo snapshots, and a SQLite database. `models/` contains the separately downloaded model. Both are ignored by Git. `IMAGE_PROCESS_DATA` and `U2NET_HOME` can override those directories before starting Python. Images are not automatically deleted: stop the server and remove the appropriate local batch directory/database when you want to clear the workspace.
+
+The service binds to loopback and is intended for one trusted local operator, with one Python server process. It has no user accounts, encryption-at-rest, or Internet hosting configuration. Do not expose it to a LAN or the public Internet. Cropping changes bounds rather than recoloring pixels; it cannot reliably identify very pale objects, transparent glass, complex shadows, or every background. Review those cases manually.
+
+Reprocessing a pending image starts from its original and clears its saved edits. Completed images are skipped, preserving their corrections. Changing batch crop settings affects pending/failed images; use **Auto-crop again** on a completed image to apply the latest saved processing settings.
+
+## Validation
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest -q
+cd frontend
+npm run build
+```
+
+The workflow tests cover selective model calls, restoring lost white pixels, manual crop, erase, undo, review state, export contents, stale-edit rejection, invalid uploads, and restart recovery. They use a deterministic model substitute; they do not measure pretrained-model accuracy or prove a specific batch throughput. Real model quality requires inspecting representative product images.
+
+Verification on November 16, 2026: 10 backend tests passed, the TypeScript/Vite production build succeeded, and a real five-image CPU batch with two AI flags successfully exported five PNGs plus a manifest. [Actual outputs](docs/DEMO.md) are included. Browser interaction testing was stopped before completion, so the UI interactions remain unverified in a live browser.
+
+## License
+
+Project code and original sample illustrations: MIT. Third-party photos, libraries, and downloaded model weights retain their own licenses; see [notices](THIRD_PARTY_NOTICES.md).
