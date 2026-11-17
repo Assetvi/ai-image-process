@@ -1,5 +1,7 @@
 # Human review demo
 
+This public demonstration recreates a workflow similar to software the author previously designed and built with AI-assisted coding for business product-image preparation. It uses a new implementation and public demo assets. These results are from this repository, with no company code or original business images included. A [side-by-side comparison is also shown directly in the README](../README.md#before-and-after).
+
 ## Quick example batch
 
 1. Start the app and click **Try an example batch**.

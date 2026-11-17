@@ -6,6 +6,8 @@ The user makes a quick judgment about which images need segmentation. One action
 
 This repository demonstrates that workflow independently. It does not integrate with any employer's admin system or claim a measured production time saving.
 
+The workflow is similar to business software the author previously designed and built with AI-assisted coding. The implementation choices documented here belong to this public reconstruction and do not imply that the earlier software used this exact stack. All demo outputs were generated from the public assets included here.
+
 The optional cleanup extension adds local OWL-ViT suggestions and LaMa inpainting. Detection and alteration are separate actions: an operator enables cleanup, selects/deselects suggestions or draws rectangles, previews the proposed fill, then applies or discards it. The [UI design research](UI_DESIGN.md) explains the interface approach, and the [real-image demo](DEMO.md) shows the business decisions.
 
 ## Components and alternatives

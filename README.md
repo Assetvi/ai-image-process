@@ -6,7 +6,25 @@ A local product-image workspace for a practical human-in-the-loop workflow: insp
 
 **See the business workflow:** [before/after image demonstrations](docs/DEMO.md) · [QA report](docs/QA.md) · [UI design research](docs/UI_DESIGN.md).
 
-This is an independent implementation of that workflow. No company source code, internal systems, customer data, or company product photos are included.
+## Project background
+
+This project recreates a workflow similar to software I previously designed and built with AI-assisted coding for product-image preparation in a business environment. It demonstrates how I combine local AI processing with human review: selective background removal, batch cropping, manual corrections, and ZIP export.
+
+This repository is a new, public implementation of that approach, with its own documented technical choices and reusable demo assets. No company source code, internal systems, customer data, or company product photos are included. The examples below were produced by this implementation; they are not screenshots or output from the earlier business software.
+
+## Before and after
+
+**Example: optional object cleanup on a real CC0 device photo.** The operator draws a rectangle around the sticker above the lens, then previews local AI inpainting. The output below shows that selected sticker removed; the surrounding product is retained.
+
+| Before: original device photo | After: selected-region AI cleanup |
+| --- | --- |
+| <img src="frontend/public/samples/cc0-camera.jpg" width="400" alt="Original public-domain camera photo with a sticker above the lens"> | <img src="docs/demo/cc0-camera-cleanup.jpg" width="400" alt="The same camera after local AI inpainting removes the manually selected sticker"> |
+
+Photo: **Digital Camera** by **Homero Nunez Chapa**, released under [CC0 Public Domain](https://creativecommons.org/publicdomain/zero/1.0/). [Original source](https://www.publicdomainpictures.net/en/view-image.php?image=153769&picture=digital-camera) · [Asset credits and changes](THIRD_PARTY_NOTICES.md).
+
+The removal region was selected manually. Automatic detection did not find a suitable region on this example. The application offers preview, apply/discard, undo, and original-pixel restoration so a person can inspect and correct the result before export. Documentation images are JPEG previews; application exports are PNG.
+
+For the business workflow, staff review a batch, enable AI only where useful, correct exceptions, and download a ZIP for the existing catalog upload process. See the [full demonstration](docs/DEMO.md) for the selected-region overlay and additional before/after examples.
 
 ## What works
 
@@ -91,6 +109,14 @@ The service binds to loopback and is intended for one trusted local operator, wi
 Reprocessing a pending image starts from its original and clears its saved edits. Completed images are skipped, preserving their corrections. Changing batch crop settings affects pending/failed images; use **Auto-crop again** on a completed image to apply the latest saved processing settings.
 
 ## Validation
+
+### AI-assisted development and verification
+
+AI-assisted coding helps me prototype and iterate quickly. I review the generated changes and verify the intended behavior with small, focused test cases as features are added, then check the complete workflow with representative images. The goal is to turn an observed failure into a reproducible regression case, fix it, and rerun the relevant checks.
+
+In this reconstruction, verification includes tests for selective model calls, crop coordinates, restore/erase behavior, preview/apply/undo, stale edits, and ZIP contents. The real-image QA script also checks that cleanup preserves pixels outside the selected region and retains transparency. TypeScript compilation and the production build check the interface code. The [QA report](docs/QA.md) distinguishes these verified results from live browser checks that remain incomplete.
+
+**CI status:** local tests and the production build have passed. The latest checked GitHub Actions run is marked failed with no recorded job steps; hosted CI has not passed. This repository configures automated checks, not a deployment pipeline. [View current Actions status](https://github.com/Assetvi/ai-image-process/actions).
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest -q
