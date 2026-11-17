@@ -47,3 +47,25 @@ class Edit(StrictModel):
         if sum([self.crop is not None, self.auto_crop, self.reset_original]) > 1:
             raise ValueError("Choose one crop or reset operation.")
         return self
+
+
+class DetectRegions(StrictModel):
+    revision: int = Field(ge=0)
+    threshold: float = Field(default=0.15, ge=0.05, le=0.9)
+    queries: list[str] = Field(default_factory=lambda: ["a brand logo", "a printed logo", "a brand name"], min_length=1, max_length=5)
+
+    @model_validator(mode="after")
+    def valid_queries(self):
+        if any(not q.strip() or len(q) > 80 for q in self.queries):
+            raise ValueError("Use 1–5 detection phrases of 1–80 characters each.")
+        return self
+
+
+class CleanupPreview(StrictModel):
+    revision: int = Field(ge=0)
+    regions: list[Crop] = Field(min_length=1, max_length=20)
+
+
+class ApplyPreview(StrictModel):
+    revision: int = Field(ge=0)
+    preview_id: str = Field(pattern=r"^[a-f0-9]{32}$")

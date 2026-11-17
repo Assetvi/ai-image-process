@@ -9,8 +9,8 @@ export async function request<T>(path: string, options?: RequestInit): Promise<T
   }
   return response.json() as Promise<T>
 }
-export function mutate(path: string, method: string, payload: unknown) {
-  return request<Batch>(path, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+export function mutate<T = Batch>(path: string, method: string, payload: unknown) {
+  return request<T>(path, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
 }
 export function imageUrl(batch: string, image: string, kind: string, revision: number) {
   return `/api/batches/${batch}/images/${image}/${kind}?v=${revision}`

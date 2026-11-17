@@ -29,3 +29,25 @@ The phone image above is by Ayamano2021, [CC BY 4.0](https://creativecommons.org
 The next human step is to inspect the full output, especially the phone outline and the camera's top controls. Use Restore only if a real product part is missing; use Erase for background remnants, or Crop when the bounding rectangle is wrong. The examples shown have no manual retouching and have not been marked approved in the app.
 
 The four illustrations can be regenerated with `python scripts/generate_samples.py`. The photo is deliberately credited separately from project code. Demo outputs are examples of this implementation, not employer materials or a benchmark of the previous production tool.
+
+## Business example: selective cleanup on a real CC0 camera photo
+
+The business task is preparing a clean catalog asset while retaining genuine product details. Already-white photos can be crop-only. If an approved brief calls for removing a sticker, label, or logo, an operator enables cleanup and chooses only that region. Background removal, detection, and cleanup are independently optional.
+
+| Original CC0 photo | Human-selected region | Actual LaMa preview |
+| --- | --- | --- |
+| <img src="../frontend/public/samples/cc0-camera.jpg" width="290" alt="CC0 camera photo with a sticker above the lens"> | <img src="demo/cc0-camera-region.jpg" width="290" alt="Rectangle around the sticker selected by the operator"> | <img src="demo/cc0-camera-cleanup.jpg" width="290" alt="Real AI preview with the selected sticker inpainted"> |
+
+The middle rectangle was selected by inspecting the image; it is not a fabricated detector success. Local OWL-ViT suggestions are recorded in [QA results](qa-results.json). Suggestions can be selected or deselected. If detection misses the target, **Draw region** remains available.
+
+The right image is a real local-model result. The operator can compare it with the original, discard it, or apply it. Applying creates an undoable revision; approval is a separate final pass. Tests verify that all pixels outside the selected rectangle and all alpha values remain unchanged before JPEG documentation encoding.
+
+| Operator decision | App behavior | Business value |
+| --- | --- | --- |
+| This photo is already clean. | Leave background AI and cleanup off; crop only. | Avoid unnecessary processing and alteration. |
+| This image needs background removal. | Flag that image and process the batch. | Apply segmentation only where it helps. |
+| An approved region needs cleanup. | Detect suggestions or draw rectangles, then preview inpainting. | Keep a human responsible for the exact alteration. |
+| AI lost a product detail or drew the wrong crop. | Restore source pixels, undo, or crop by hand. | Recover without re-uploading the source. |
+| The result is ready. | Approve and export PNGs with a manifest in one ZIP. | Fit the existing catalog upload workflow. |
+
+Photo: **Digital Camera**, Homero Nunez Chapa, [CC0 Public Domain](https://creativecommons.org/publicdomain/zero/1.0/), [source](https://www.publicdomainpictures.net/en/view-image.php?image=153769&picture=digital-camera). The images above are resized JPEG documentation previews. See [QA scope and limits](QA.md); no throughput or sales impact is inferred from this small demonstration.

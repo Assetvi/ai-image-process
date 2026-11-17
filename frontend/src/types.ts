@@ -13,6 +13,7 @@ export type Batch = {
 export type Health = {
   status: string;
   ai: { installed: boolean; model_cached: boolean; model: string; providers: string[]; error: string | null };
+  cleanup?: { inpainting_installed: boolean; inpainting_cached: boolean; detector_installed: boolean; detector_cached: boolean };
 }
 export type Stroke = { mode: 'restore' | 'erase'; radius: number; points: { x: number; y: number }[] }
 export type Crop = { x: number; y: number; width: number; height: number }

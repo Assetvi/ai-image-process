@@ -17,6 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image
 
 from .ai import BackgroundRemover
+from .cleanup import ObjectCleaner
 from .config import DATA_DIR, MAX_BATCH_BYTES, MAX_FILE_BYTES, MAX_FILES, PORT, ROOT
 from .imaging import (
     apply_strokes,
@@ -27,7 +28,7 @@ from .imaging import (
     unique_name,
     validate_crop,
 )
-from .schemas import Edit, Flags, Options, StrictModel
+from .schemas import ApplyPreview, CleanupPreview, DetectRegions, Edit, Flags, Options, StrictModel
 from .store import Store
 
 logger = logging.getLogger(__name__)
@@ -38,9 +39,10 @@ class Reviewed(StrictModel):
     revision: int
 
 
-def create_app(data_dir: Path = DATA_DIR, remover=None) -> FastAPI:
+def create_app(data_dir: Path = DATA_DIR, remover=None, cleaner=None) -> FastAPI:
     store = Store(data_dir)
     engine = remover or BackgroundRemover()
+    cleanup = cleaner or ObjectCleaner()
     pool = ThreadPoolExecutor(max_workers=1, thread_name_prefix="image-worker")
 
     @asynccontextmanager
@@ -110,7 +112,7 @@ def create_app(data_dir: Path = DATA_DIR, remover=None) -> FastAPI:
     def record_history(folder: Path, item: dict):
         snapshot = f"undo-{uuid.uuid4().hex}.png"
         shutil.copyfile(folder / "current.png", folder / snapshot)
-        item["history"].append({"file": snapshot, "crop": item["crop"], "warning": item["warning"]})
+        item["history"].append({"file": snapshot, "crop": item["crop"], "warning": item["warning"], "cleanup_applied": item.get("cleanup_applied", False)})
         while len(item["history"]) > 10:
             (folder / item["history"].pop(0)["file"]).unlink(missing_ok=True)
 
@@ -145,6 +147,7 @@ def create_app(data_dir: Path = DATA_DIR, remover=None) -> FastAPI:
                             reviewed=False,
                             history=[],
                             revision=item["revision"] + 1,
+                            cleanup_applied=False,
                         )
                         render(folder, item)
                         store.put(batch)
@@ -172,6 +175,7 @@ def create_app(data_dir: Path = DATA_DIR, remover=None) -> FastAPI:
         return {
             "status": "ok",
             "ai": engine.status(),
+            "cleanup": cleanup.status(),
             "limits": {
                 "files": MAX_FILES,
                 "file_mb": MAX_FILE_BYTES // 1024 // 1024,
@@ -317,6 +321,7 @@ def create_app(data_dir: Path = DATA_DIR, remover=None) -> FastAPI:
             warning = None
             if payload.reset_original:
                 crop = [0, 0, image.width, image.height]
+                item["cleanup_applied"] = False
             elif payload.auto_crop:
                 crop, warning = auto_box(
                     image,
@@ -327,6 +332,81 @@ def create_app(data_dir: Path = DATA_DIR, remover=None) -> FastAPI:
                 )
             save_png(image, folder / "current.png")
             item.update(crop=crop, warning=warning, reviewed=False, revision=item["revision"] + 1)
+            render(folder, item)
+            store.put(batch)
+            return batch
+
+    def ready_snapshot(batch_id: str, image_id: str, revision: int):
+        # Called under the store lock; expensive inference runs outside it.
+        batch = batch_or_404(batch_id)
+        editable(batch)
+        item = item_or_404(batch, image_id)
+        if item["status"] != "ready" or revision != item["revision"]:
+            raise HTTPException(409, "Process and reload this image before using cleanup.")
+        folder = store.folder(batch_id, image_id)
+        with Image.open(folder / "current.png") as source:
+            current = source.convert("RGBA")
+        return batch, item, folder, current
+
+    @api.post("/api/batches/{batch_id}/images/{image_id}/cleanup/detect")
+    def detect_regions(batch_id: str, image_id: str, payload: DetectRegions):
+        with store.lock:
+            _, _, _, image = ready_snapshot(batch_id, image_id, payload.revision)
+        try:
+            regions = cleanup.detect(image, payload.threshold, payload.queries)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from exc
+        with store.lock:
+            ready_snapshot(batch_id, image_id, payload.revision)
+        return {"revision": payload.revision, "suggestions": regions}
+
+    @api.post("/api/batches/{batch_id}/images/{image_id}/cleanup/preview")
+    def preview_cleanup(batch_id: str, image_id: str, payload: CleanupPreview):
+        with store.lock:
+            _, _, folder, image = ready_snapshot(batch_id, image_id, payload.revision)
+        try:
+            result = cleanup.inpaint(image, payload.regions)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+        with store.lock:
+            ready_snapshot(batch_id, image_id, payload.revision)
+            preview_id = uuid.uuid4().hex
+            save_png(result, folder / f"preview-{preview_id}.png")
+            (folder / f"preview-{preview_id}.json").write_text(json.dumps({"revision": payload.revision}), encoding="utf-8")
+            # Bound retained preview disk usage per image, including abandoned drafts.
+            previews = sorted(folder.glob("preview-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+            for old in previews[3:]:
+                old.with_suffix(".png").unlink(missing_ok=True)
+                old.unlink(missing_ok=True)
+        return {"preview_id": preview_id, "revision": payload.revision}
+
+    def preview_path(folder: Path, preview_id: str, revision: int):
+        if len(preview_id) != 32 or any(c not in "0123456789abcdef" for c in preview_id):
+            raise HTTPException(404, "Preview not found.")
+        meta = folder / f"preview-{preview_id}.json"
+        if not meta.is_file():
+            raise HTTPException(404, "Preview expired. Generate another preview.")
+        if json.loads(meta.read_text(encoding="utf-8"))["revision"] != revision:
+            raise HTTPException(409, "Image changed. Generate another cleanup preview.")
+        return meta.with_suffix(".png")
+
+    @api.get("/api/batches/{batch_id}/images/{image_id}/cleanup/previews/{preview_id}")
+    def get_cleanup_preview(batch_id: str, image_id: str, preview_id: str):
+        with store.lock:
+            batch = batch_or_404(batch_id)
+            item = item_or_404(batch, image_id)
+            path = preview_path(store.folder(batch_id, image_id), preview_id, item["revision"])
+            return FileResponse(path, media_type="image/png", headers={"Cache-Control": "no-store"})
+
+    @api.post("/api/batches/{batch_id}/images/{image_id}/cleanup/apply")
+    def apply_cleanup(batch_id: str, image_id: str, payload: ApplyPreview):
+        with store.lock:
+            batch, item, folder, _ = ready_snapshot(batch_id, image_id, payload.revision)
+            path = preview_path(folder, payload.preview_id, payload.revision)
+            record_history(folder, item)
+            with Image.open(path) as source:
+                save_png(source, folder / "current.png")
+            item.update(revision=item["revision"] + 1, reviewed=False, cleanup_applied=True)
             render(folder, item)
             store.put(batch)
             return batch
@@ -350,6 +430,7 @@ def create_app(data_dir: Path = DATA_DIR, remover=None) -> FastAPI:
                 warning=snapshot["warning"],
                 reviewed=False,
                 revision=item["revision"] + 1,
+                cleanup_applied=snapshot.get("cleanup_applied", False),
             )
             render(folder, item)
             store.put(batch)
@@ -405,6 +486,7 @@ def create_app(data_dir: Path = DATA_DIR, remover=None) -> FastAPI:
                             "height": image.height,
                             "ai": item["remove_background"],
                             "reviewed": item["reviewed"],
+                            "object_cleanup": item.get("cleanup_applied", False),
                         }
                     )
                 zipped.writestr("manifest.json", json.dumps(manifest, indent=2))

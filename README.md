@@ -2,6 +2,10 @@
 
 A local product-image workspace for a practical human-in-the-loop workflow: inspect a batch, flag only images needing AI background removal, crop all images, correct mistakes, and export one ZIP for an existing catalog upload system.
 
+**Browse the code:** [Python backend](app/) · [React interface](frontend/src/) · [tests](tests/).
+
+**See the business workflow:** [before/after image demonstrations](docs/DEMO.md) · [QA report](docs/QA.md) · [UI design research](docs/UI_DESIGN.md).
+
 This is an independent implementation of that workflow. No company source code, internal systems, customer data, or company product photos are included.
 
 ## What works
@@ -11,6 +15,7 @@ This is an independent implementation of that workflow. No company source code, 
 - Run local U²-Net inference through rembg and ONNX Runtime. No image-processing API keys or external inference services.
 - Automatically trim outer whitespace or transparent borders, with adjustable padding and white threshold.
 - Compare original and processed views; draw a manual crop rectangle; restore original pixels or erase with a brush.
+- Optionally enable object/logo cleanup, ask the local detector for suggestions, select or deselect regions, or draw rectangles manually. Preview LaMa inpainting, then apply or discard it.
 - Undo unsaved brush strokes and up to 10 saved edits per image. Reset to the original at any time after processing.
 - Approve results, reopen recent batches, and export all images or only approved images.
 - Export PNGs on white or transparent backgrounds plus a manifest. Failed images block export until fixed; they are never silently omitted.
@@ -66,6 +71,19 @@ See [the demo guide](docs/DEMO.md) for a real-device example and human review st
 
 ## Data and operation
 
+### Object cleanup
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[ai,cleanup,detect,dev]"
+.\.venv\Scripts\python.exe -m app.download_cleanup_models --detector
+```
+
+Restart the server. LaMa is approximately 208 MB; the optional OWL-ViT detector adds larger weights and PyTorch dependencies. The downloaded weights stay in ignored `models/`. Installation downloads models; inference reads local files only.
+
+After processing an image, enable **Object & logo removal**. **Detect logos** provides suggestions; it does not change the picture. Enter a phrase such as a brand name and adjust sensitivity if needed. Select or deselect suggestions, or use **Draw region** and drag one or more rectangles on the image. **Preview removal** shows a proposed fill. **Apply removal** saves it and clears approval; **Discard preview** leaves the image unchanged. Disable the cleanup toggle to clear the region selection. Undo or restore original pixels if a result is wrong.
+
+Automatic suggestions are experimental and can miss logos or select the wrong area. The model is a general-purpose detector, not a specialist logo recognizer. A preview can invent surface detail, so review it before approving catalog images. Background removal and object cleanup are independently optional. Ordinary erase removes transparency; cleanup synthesizes replacement pixels.
+
 `data/` contains decoded originals, working images, undo snapshots, and a SQLite database. `models/` contains the separately downloaded model. Both are ignored by Git. `IMAGE_PROCESS_DATA` and `U2NET_HOME` can override those directories before starting Python. Images are not automatically deleted: stop the server and remove the appropriate local batch directory/database when you want to clear the workspace.
 
 The service binds to loopback and is intended for one trusted local operator, with one Python server process. It has no user accounts, encryption-at-rest, or Internet hosting configuration. Do not expose it to a LAN or the public Internet. Cropping changes bounds rather than recoloring pixels; it cannot reliably identify very pale objects, transparent glass, complex shadows, or every background. Review those cases manually.
@@ -82,7 +100,7 @@ npm run build
 
 The workflow tests cover selective model calls, restoring lost white pixels, manual crop, erase, undo, review state, export contents, stale-edit rejection, invalid uploads, and restart recovery. They use a deterministic model substitute; they do not measure pretrained-model accuracy or prove a specific batch throughput. Real model quality requires inspecting representative product images.
 
-Verification on November 16, 2026: 10 backend tests passed, the TypeScript/Vite production build succeeded, and a real five-image CPU batch with two AI flags successfully exported five PNGs plus a manifest. [Actual outputs](docs/DEMO.md) are included. Browser interaction testing was stopped before completion, so the UI interactions remain unverified in a live browser.
+Verification includes backend tests, a TypeScript/Vite production build, and real-model image processing. Run `python scripts/qa_demo.py` after local model setup to reproduce the six-image batch, detection requests, inpainting preview, pixel-preservation assertions, apply/undo checks, and ZIP export. See the [QA report](docs/QA.md) for results and verification limits.
 
 ## License
 

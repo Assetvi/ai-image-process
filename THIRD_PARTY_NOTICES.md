@@ -16,6 +16,22 @@ The root MIT license covers this project's code and original illustrations. It d
 
 ## Software and model sources
 
+### Public-domain camera
+
+`frontend/public/samples/cc0-camera.jpg` is derived from **Digital Camera** by **Homero Nunez Chapa**, released under CC0 Public Domain by the source:
+
+- Photo/license page: https://www.publicdomainpictures.net/en/view-image.php?image=153769&picture=digital-camera
+- File: https://www.publicdomainpictures.net/pictures/160000/velka/digital-camera-1457893320kDe.jpg
+- License: https://creativecommons.org/publicdomain/zero/1.0/
+- Changes: resized to 1200 px maximum edge, JPEG re-encoded, metadata stripped. The `docs/demo/cc0-camera-*` derivatives additionally show crop, selection annotation, or local AI inpainting as labeled.
+
+### Cleanup models
+
+- LaMa: https://github.com/advimman/lama (Apache-2.0).
+- ONNX export: https://huggingface.co/Carve/LaMa-ONNX, revision `c3c0c9e46893`; SHA-256 `1faef5301d78db7dda502fe59966957ec4b79dd64e16f03ed96913c7a4eb68d6`.
+- OWL-ViT: https://huggingface.co/google/owlvit-base-patch32 (Apache-2.0). The local QA snapshot was `cbc355fb364588351c5d51c7f74465e8e7ec6f72`.
+- PyTorch, Transformers, and Hugging Face Hub retain their upstream licenses. Weights are downloaded separately and excluded from this repository.
+
 Dependencies retain the license distributed in each package. See the authoritative projects for current terms:
 
 - Python: https://www.python.org/psf/license/

@@ -6,6 +6,8 @@ The user makes a quick judgment about which images need segmentation. One action
 
 This repository demonstrates that workflow independently. It does not integrate with any employer's admin system or claim a measured production time saving.
 
+The optional cleanup extension adds local OWL-ViT suggestions and LaMa inpainting. Detection and alteration are separate actions: an operator enables cleanup, selects/deselects suggestions or draws rectangles, previews the proposed fill, then applies or discards it. The [UI design research](UI_DESIGN.md) explains the interface approach, and the [real-image demo](DEMO.md) shows the business decisions.
+
 ## Components and alternatives
 
 | Component | Choice | Why | Tradeoff / alternative |
@@ -19,6 +21,10 @@ This repository demonstrates that workflow independently. It does not integrate 
 | Frontend build | Vite | Fast development with a same-origin API proxy; static production assets. | Node is needed to build, but not to serve the finished app. |
 | Segmentation | rembg + U²-Net + ONNX Runtime | Reuses a pretrained segmentation model; no training pipeline, LLM, or external image service. | The general-purpose model can damage fine edges, white details, glass, and shadows. |
 | AI selection | Explicit per-image flag, off by default | Avoids unnecessary inference and alteration of already-clean catalog images. | Operator still makes the initial judgment. |
+| Logo suggestions | Optional local OWL-ViT, safetensors weights | Text queries and overlapping closer views can suggest marks without a service or specialist training set. | General-purpose detection can miss logos; model scores are not calibrated probabilities. |
+| Object cleanup | Optional local LaMa ONNX, fixed 512 px model input | Inpaints a selected region using surrounding context; crop-based inference focuses resolution near the edit. | It synthesizes pixels and can invent detail, so preview and approval are required workflow steps. |
+| Cleanup scope | Rectangle selections, maximum 20 regions and less than 40% of image area | Makes target areas explicit and preserves surrounding context. | Fine irregular masks may need several rectangles; ordinary erase/restore remain separate brush tools. |
+| Preview lifetime | Revision-bound temporary files, at most three per image | Prevents applying a stale preview and bounds abandoned preview storage. | Expired previews must be regenerated. |
 | Model lifetime | Lazy cached session | Loads once on first flagged job; crop-only mode works without installing AI. | First inference is slower and requires a separately downloaded model. |
 | Concurrency | One executor worker and one server process | Bounds inference concurrency and serializes changes to shared files. | Unsuitable for a shared high-volume service without a real queue and per-job isolation. |
 | Storage | SQLite JSON metadata + PNG files | Easy setup, restart persistence, no PostgreSQL/Redis/S3 requirements. | Local disk usage grows; no backup, quotas, users, or automatic retention policy. |

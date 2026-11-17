@@ -1,0 +1,25 @@
+{
+  "sample_count": 6,
+  "background_removal_count": 2,
+  "checks": [
+    "Six real sample images processed successfully; only two flagged images used background removal.",
+    "Real OWL-ViT detection completed without modifying any source pixels.",
+    "Real LaMa preview changed the selected area, preserved all unselected pixels and alpha, and left the saved image unchanged.",
+    "Apply, stale-preview rejection, undo, and export of six PNGs plus a cleanup-aware manifest passed."
+  ],
+  "logo_suggestions": [],
+  "sticker_suggestions": [],
+  "removal_region_source": "manually selected after inspection",
+  "removal_region": {
+    "x": 636,
+    "y": 57,
+    "width": 224,
+    "height": 67
+  },
+  "browser_qa": "not completed; computer control was stopped by the user",
+  "models": {
+    "background": "U2-Net",
+    "detection": "google/owlvit-base-patch32",
+    "inpainting": "Carve LaMa ONNX"
+  }
+}

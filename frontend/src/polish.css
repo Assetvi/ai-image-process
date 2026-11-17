@@ -1,0 +1,54 @@
+/* Content-first workspace, informed by Apple HIG hierarchy and agency. */
+:root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; --muted: #56645d; }
+body { margin: 0; }
+button, input, select { font: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible,
+[role="button"]:focus-visible, summary:focus-visible { outline: 3px solid #3478f6; outline-offset: 3px; }
+.page-heading p, .setting-description, .export-note, .process-note,
+.image-notice, .editor-secondary, .editor-hint, .help-small { font-size: 12px; line-height: 1.65; }
+.page-heading h1 { font-weight: 650; letter-spacing: -.8px; }
+.page-heading .eyebrow { display: none; }
+.button { min-height: 36px; font-size: 12px; border-radius: 9px; }
+.button.compact { min-height: 32px; font-size: 11px; }
+.icon-button { min-width: 32px; min-height: 32px; }
+.tool { min-height: 34px; }
+.tool.selected { box-shadow: inset 0 0 0 1px currentColor; }
+.image-name, .ai-flag { font-size: 11px; }
+.range-heading, .review-only, .export-select-label { font-size: 12px; }
+.workbench { box-shadow: 0 6px 30px #1f293708; }
+.editor-toolbar { flex-wrap: wrap; gap: 8px; }
+.editor-file small, .workspace-footer, .app-footer { font-size: 11px; }
+.app-footer a { color: #405b4d; text-underline-offset: 3px; }
+.cleanup-panel { padding: 18px 20px; border-top: 1px solid var(--border); background: #fafbfc; }
+.cleanup-toggle { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.cleanup-toggle span { flex: 1; }
+.cleanup-toggle strong { display: block; font-size: 13px; }
+.cleanup-toggle small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; line-height: 1.6; }
+.cleanup-actions, .cleanup-preview-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+.cleanup-preview-actions strong { width: 100%; font-size: 12px; color: #255c4a; }
+.cleanup-help { color: var(--muted); font-size: 11px; line-height: 1.6; margin: 10px 0 0; }
+.cleanup-query { display: flex; align-items: center; gap: 12px; font-size: 12px; margin-top: 14px; flex-wrap: wrap; }
+.cleanup-query input { flex: 1 1 180px; min-width: 0; border: 1px solid #b7c0bb; background: white; padding: 8px 10px; border-radius: 7px; }
+.suggestion-list { display: grid; gap: 10px; margin-top: 14px; }
+.suggestion-list label { display: flex; gap: 8px; align-items: center; font-size: 12px; }
+.suggestion-list span { color: var(--muted); margin-left: auto; font-size: 11px; }
+.region-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.region-list button { display: flex; gap: 6px; align-items: center; border: 1px solid #adb6c3; border-radius: 7px; background: white; padding: 7px; font-size: 11px; cursor: pointer; }
+.removal-region { position: absolute; border: 2px solid #b04a87; background: #d9569f40; pointer-events: none; box-sizing: border-box; }
+.removal-region span { position: absolute; top: 0; left: 0; background: #8b3069; color: white; padding: 2px 5px; font-size: 11px; }
+@media (max-width: 900px) {
+  .settings-panel { grid-template-columns: 1fr 1fr; }
+  .settings-panel .product-note { grid-column: 1 / -1; }
+  .editor-file small, .image-name, .ai-flag { font-size: 10px; }
+}
+@media (max-width: 650px) {
+  .tool, .icon-button { min-height: 42px; min-width: 36px; }
+  .button, .button.compact { min-height: 42px; font-size: 12px; }
+  .settings-panel { display: block; }
+  .page-heading p, .setting-description, .export-note { font-size: 12px; }
+  .cleanup-panel { padding: 16px; }
+  .cleanup-actions .button { flex: 1 1 130px; }
+  .editor-hint { max-width: 58%; font-size: 10px; }
+  .editor-bottom { flex-wrap: wrap; height: auto; min-height: 60px; gap: 10px; padding-block: 10px; }
+  .app-footer { flex-wrap: wrap; }
+}

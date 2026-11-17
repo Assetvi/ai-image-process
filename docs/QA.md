@@ -1,0 +1,48 @@
+# QA report
+
+## Scope
+
+QA covers the batch workflow and the new optional logo/object-cleanup path. All image examples use original sample illustrations, a credited CC BY 4.0 phone photo, or the CC0 camera photo described in [asset notices](../THIRD_PARTY_NOTICES.md). No employer materials are used.
+
+## Checks
+
+Local results for this revision: **12 backend tests passed** and the TypeScript/Vite production build succeeded. The six-image real-model QA script also passed its pixel, revision, undo, and ZIP assertions. OWL-ViT returned no logo or sticker suggestions on this particular camera photo; the shown removal uses the documented manual rectangle.
+
+| Check | Evidence / result |
+| --- | --- |
+| Backend regressions | Tests cover selective background AI, crop/restore/erase, duplicate names, invalid uploads, stale revisions, undo, export, and interrupted-job recovery. |
+| Cleanup integration | Tests exercise detection without writes, preview without apply, preservation outside a selected area, apply, stale-preview rejection, undo, invalid/oversized regions, missing model setup, and export metadata. |
+| Production build | `npm run build` checks TypeScript and builds the React interface. |
+| Real segmentation | Six sample images are processed; only two are flagged for U²-Net. |
+| Real detection | Local OWL-ViT runs against the CC0 camera. Empty suggestions are a legitimate outcome and are recorded, rather than treated as successful logo recognition. |
+| Real inpainting | LaMa fills a manually selected sticker region in the real photo. Assertions verify that unselected pixels and the alpha channel are unchanged. |
+| Apply and recovery | Preview leaves the saved image unchanged; apply updates it; repeating a stale apply is rejected; undo restores the exact previous working PNG. |
+| ZIP contents | Six PNGs and a JSON manifest, including an `object_cleanup` field for each exported item. |
+
+The machine-readable real-model results are in [qa-results.json](qa-results.json). Reproduce them after model setup with:
+
+```powershell
+python scripts/qa_demo.py
+```
+
+The script writes a new ignored local QA workspace and refreshes the documented demo outputs. Its removal rectangle is explicitly selected from inspecting the photo. It does not pretend the detector selected that area automatically.
+
+## Bugs and limitations found
+
+| Finding | Resolution or limit |
+| --- | --- |
+| SQLite context managers did not close connections on Windows. | Explicit connection closure prevents locked database files during cleanup. |
+| rembg's new model-cache layout differed from the old flat directory. | Readiness checks support both locations. |
+| Model calls can finish after another tab edits an image. | Detection/preview recheck revisions after inference; apply rejects stale revisions and previews. |
+| A changed selection could leave an old preview to apply. | Undo is disabled while previewing; discard the preview before changing regions. |
+| Preview image loading could fail independently of inference. | The UI waits for image loading and reports failure before offering apply. |
+| Small logos may disappear at full-image detector resolution. | Larger photos are examined as a whole and through overlapping closer views. Suggestions remain experimental. |
+| Cleanup could alter the surrounding product unnecessarily. | Only pixels inside selected rectangles are composited back; source alpha is preserved. |
+| Inpainting can invent plausible but inaccurate detail. | Preview and human approval remain separate; use undo/restore when needed. |
+| Tiny labels and cramped toolbars reduce usability. | A readability/focus/responsive polish layer addresses these in code. Live visual validation remains outstanding. |
+
+## Outstanding verification
+
+Browser automation was stopped with physical Escape input. Live desktop/mobile visual review, pointer dragging, keyboard navigation, and download-dialog behavior were not completed. Automated tests and a successful production build are not a substitute for those checks.
+
+No accuracy percentage or production throughput guarantee is claimed from these examples. In particular, an empty detection result demonstrates the need for manual region drawing; it is not evidence that no logo exists.
