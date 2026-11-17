@@ -29,6 +29,12 @@ The earlier stylesheet included very small secondary labels. The polish layer in
 
 Preview state is invalidated when image revisions change. Undo is disabled while a preview is active, preventing a changed selection from leaving an old preview available to apply. Failed preview image loading is reported instead of silently leaving the operator to apply unseen output.
 
+## README presentation
+
+The front README is a short portfolio showcase: centered identity, compact navigation, colored descriptive badges, prominent business metrics, one real before/after comparison, and bold capability summaries. Installation, running instructions, and the actual UI screenshot live in the [technical guide](TECHNICAL_GUIDE.md). Reported earlier-employer results are labeled separately from public-rebuild evidence in the [business case](CASE_STUDY.md).
+
+Presentation references reviewed online include [AppFlowy's README](https://github.com/AppFlowy-IO/AppFlowy/blob/main/README.md), for its centered identity, compact links, and image-led introduction, and [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui), for its image-based feature showcase and links to deeper documentation. These are layout references; this project's wording, screenshots, and examples are its own. Standard Markdown emphasis and badge images provide hierarchy on GitHub without depending on unsupported font-color styling.
+
 ## Verification limit
 
-TypeScript compilation and API/model QA were completed. Live browser interaction and visual QA were stopped by physical Escape input. The responsive layout and pointer interactions therefore still need a browser review; this document does not claim they passed one. No screenshot is fabricated as proof of browser QA.
+TypeScript compilation and API/model QA were completed. A later desktop smoke check also verified loading examples, selective flags, processing, image selection, and enabling cleanup; the [actual screenshot](screenshots/workspace.jpg) documents that state. Mobile layout, pointer drawing, keyboard navigation, and download dialogs still need review. Earlier browser attempts were interrupted; the later screenshot does not establish that all browser QA is complete.

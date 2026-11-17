@@ -25,6 +25,8 @@ The root MIT license covers this project's code and original illustrations. It d
 - License: https://creativecommons.org/publicdomain/zero/1.0/
 - Changes: resized to 1200 px maximum edge, JPEG re-encoded, metadata stripped. The `docs/demo/cc0-camera-*` derivatives additionally show crop, selection annotation, or local AI inpainting as labeled.
 
+`docs/demo/cc0-camera-finished.png` is the application's cropped PNG export after local inpainting of a manually selected sticker region. `docs/screenshots/workspace.jpg` captures the running interface with this credited CC0 photo and original project sample illustrations. The screenshot shows the earlier crop-only camera state before sticker cleanup.
+
 ### Cleanup models
 
 - LaMa: https://github.com/advimman/lama (Apache-2.0).

@@ -47,8 +47,14 @@ The script writes a new ignored local QA workspace and refreshes the documented 
 | Inpainting can invent plausible but inaccurate detail. | Preview and human approval remain separate; use undo/restore when needed. |
 | Tiny labels and cramped toolbars reduce usability. | A readability/focus/responsive polish layer addresses these in code. Live visual validation remains outstanding. |
 
+## Desktop screenshot and smoke check
+
+A later desktop browser check loaded the six public sample images, flagged the camera illustration and phone for background removal, processed the batch to six ready images with zero errors, selected the real CC0 camera, and enabled its optional cleanup controls. The actual [workspace screenshot](screenshots/workspace.jpg) appears in the [technical guide](TECHNICAL_GUIDE.md). This is a limited smoke check, not a complete interaction review.
+
+The README's cropped cleanup example was subsequently exported from the running app after previewing and applying the documented manual sticker rectangle. The screenshot shows the earlier state with that sticker still present.
+
 ## Outstanding verification
 
-Browser automation was stopped with physical Escape input. Live desktop/mobile visual review, pointer dragging, keyboard navigation, and download-dialog behavior were not completed. Automated tests and a successful production build are not a substitute for those checks.
+Earlier browser automation was stopped with physical Escape input. The later limited desktop smoke check does not complete mobile layout review, pointer-drawn regions/crops, keyboard navigation, or download-dialog verification. Automated tests and a successful production build are not a substitute for those checks. The machine-readable real-model report records the scope of its earlier API/model run.
 
 No accuracy percentage or production throughput guarantee is claimed from these examples. In particular, an empty detection result demonstrates the need for manual region drawing; it is not evidence that no logo exists.
