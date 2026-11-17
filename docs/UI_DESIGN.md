@@ -31,9 +31,11 @@ Preview state is invalidated when image revisions change. Undo is disabled while
 
 ## README presentation
 
-The front README is a short portfolio showcase: centered identity, compact navigation, colored descriptive badges, prominent business metrics, one real before/after comparison, and bold capability summaries. Installation, running instructions, and the actual UI screenshot live in the [technical guide](TECHNICAL_GUIDE.md). Reported earlier-employer results are labeled separately from public-rebuild evidence in the [business case](CASE_STUDY.md).
+The front README follows a restrained, content-first direction inspired by [Apple HIG design principles](https://developer.apple.com/design/human-interface-guidelines/design-principles): prioritize the useful content, use concise wording, and make the hierarchy clear. A simple title and business story lead into three impact figures and one real before/after comparison. Monochrome text, selective bold emphasis, generous spacing, and short captions keep attention on the result. Supporting document links appear once at the bottom.
 
-Presentation references reviewed online include [AppFlowy's README](https://github.com/AppFlowy-IO/AppFlowy/blob/main/README.md), for its centered identity, compact links, and image-led introduction, and [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui), for its image-based feature showcase and links to deeper documentation. These are layout references; this project's wording, screenshots, and examples are its own. Standard Markdown emphasis and badge images provide hierarchy on GitHub without depending on unsupported font-color styling.
+Installation, running instructions, and the actual UI screenshot live in the [technical guide](TECHNICAL_GUIDE.md). Reported earlier-employer results are labeled separately from public-rebuild evidence in the [business case](CASE_STUDY.md).
+
+[AppFlowy](https://github.com/AppFlowy-IO/AppFlowy/blob/main/README.md) and [Stable Diffusion WebUI](https://github.com/AUTOMATIC1111/stable-diffusion-webui) were also reviewed as examples of image-led project introductions and deeper documentation links. These are presentation references; this project uses its own wording, screenshots, and examples.
 
 ## Verification limit
 
